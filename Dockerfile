@@ -1,11 +1,21 @@
-FROM gcr.io/google.com/cloudsdktool/cloud-sdk:alpine
+FROM alpine:latest as downloader
 
+RUN wget -q https://releases.hashicorp.com/terraform/0.14.6/terraform_0.14.6_linux_amd64.zip
+RUN unzip terraform_0.14.6_linux_amd64.zip
+RUN chmod a+x terraform
+RUN mv terraform /tmp
+
+RUN wget -q -O - https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv4.0.1/kustomize_v4.0.1_linux_amd64.tar.gz | tar xvzf -
+RUN chmod a+x kustomize
+RUN mv kustomize /tmp
+
+RUN wget -q "https://storage.googleapis.com/kubernetes-release/release/$(wget -q -O - https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+RUN chmod a+x kubectl
+RUN mv kubectl /tmp
+
+
+FROM gcr.io/google.com/cloudsdktool/cloud-sdk:alpine as runner
 RUN apk --no-cache add make
-RUN wget -q "https://releases.hashicorp.com/terraform/0.14.6/terraform_0.14.6_linux_amd64.zip" && unzip terraform_0.14.6_linux_amd64.zip && \
-       rm terraform_0.14.6_linux_amd64.zip; mv terraform /usr/bin && chmod a+x /usr/bin/terraform; \
-    wget -q "https://storage.googleapis.com/kubernetes-release/release/$(wget -q -O - https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl" && \
-       mv kubectl /usr/bin && chmod a+x /usr/bin/kubectl; \
-    wget -q -O - https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv4.0.1/kustomize_v4.0.1_linux_amd64.tar.gz | tar xvzf - && \
-       mv kustomize /usr/bin && chmod a+x /usr/bin/kustomize
+COPY --from=downloader /tmp /usr/local/bin
 
 ENTRYPOINT ["make"]
