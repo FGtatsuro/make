@@ -1,7 +1,7 @@
 FROM alpine:latest as downloader
 
-RUN wget -q https://releases.hashicorp.com/terraform/0.14.6/terraform_0.14.6_linux_amd64.zip
-RUN unzip terraform_0.14.6_linux_amd64.zip
+RUN wget -q https://releases.hashicorp.com/terraform/1.0.0/terraform_1.0.0_linux_amd64.zip
+RUN unzip terraform_1.0.0_linux_amd64.zip
 RUN chmod a+x terraform
 RUN mv terraform /tmp
 
